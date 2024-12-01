@@ -199,15 +199,33 @@ function initializeQuantumReality() {
 
     chrome.runtime.onMessage.addListener(messageHandler);
 
-    // Start quantum maintenance with context validation
-    const maintenanceInterval = setInterval(() => {
-        if (isExtensionContextValid() && quantumState) {
-            quantumState.maintainQuantumCoherence();
-        } else {
-            console.warn('Extension context invalid, stopping maintenance');
+    // Start quantum maintenance with robust context validation and recovery
+    let maintenanceInterval;
+    
+    function startMaintenanceLoop() {
+        if (maintenanceInterval) {
             clearInterval(maintenanceInterval);
         }
-    }, 30000);
+        
+        maintenanceInterval = setInterval(() => {
+            try {
+                if (!chrome?.runtime?.id) {
+                    throw new Error('Extension context invalid');
+                }
+                
+                if (quantumState) {
+                    quantumState.maintainQuantumCoherence();
+                }
+            } catch (err) {
+                console.warn('Maintenance disrupted:', err);
+                clearInterval(maintenanceInterval);
+                // Attempt recovery after delay
+                setTimeout(startMaintenanceLoop, 5000);
+            }
+        }, 30000);
+    }
+    
+    startMaintenanceLoop();
 
 // Handle initialization failures
 function handleInitializationError(err) {
