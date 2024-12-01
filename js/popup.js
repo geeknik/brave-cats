@@ -138,30 +138,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         while (retries < maxRetries) {
             try {
-                const response = await sendQuantumMessage({type: 'getQuantumStats'});
-                if (response) {
-                    document.getElementById('shardCount').textContent = 
-                        response.shards > 42 ? '∞' : response.shards;
-                    document.getElementById('catCount').textContent = 
-                        response.cats > 99 ? 'ℵ₀' : response.cats;
-                    document.getElementById('fieldStability').textContent = 
-                        response.stability > 98 ? 'ψ' : `${response.stability}%`;
-                    return; // Success, exit retry loop
+                const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+                if (!tab?.id) throw new Error('No active tab');
+
+                const response = await chrome.tabs.sendMessage(tab.id, {
+                    type: 'GET_QUANTUM_STATS',
+                    timestamp: Date.now()
+                });
+
+                if (response && typeof response === 'object') {
+                    // Validate and display stats
+                    const shardCount = document.getElementById('shardCount');
+                    const catCount = document.getElementById('catCount');
+                    const fieldStability = document.getElementById('fieldStability');
+
+                    if (shardCount) shardCount.textContent = 
+                        Number.isFinite(response.shards) ? 
+                            (response.shards > 42 ? '∞' : response.shards) : '0';
+                    
+                    if (catCount) catCount.textContent = 
+                        Number.isFinite(response.cats) ? 
+                            (response.cats > 99 ? 'ℵ₀' : response.cats) : '0';
+                    
+                    if (fieldStability) fieldStability.textContent = 
+                        Number.isFinite(response.stability) ? 
+                            (response.stability > 98 ? 'ψ' : `${response.stability}%`) : '0%';
+                    
+                    console.debug('Stats updated:', response);
+                    return;
                 }
+                throw new Error('Invalid stats response');
             } catch (error) {
                 console.warn(`Retry ${retries + 1}/${maxRetries} failed:`, error);
-            }
-            
-            retries++;
-            if (retries < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, 500)); // Wait before retry
+                retries++;
+                if (retries < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 500 * retries));
+                }
             }
         }
         
-        // Set default values after all retries fail
-        document.getElementById('shardCount').textContent = '?';
-        document.getElementById('catCount').textContent = '?';
-        document.getElementById('fieldStability').textContent = '?';
+        // Set error state after all retries fail
+        const elements = ['shardCount', 'catCount', 'fieldStability'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = '0';
+        });
     }
 
     // Update stats periodically with dynamic interval
