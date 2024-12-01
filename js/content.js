@@ -83,24 +83,46 @@ function handleRealityFluctuation(mutations) {
     }
 }
 
-// Enhanced extension context validation
+// Enhanced extension context validation with secure domain checks
 function isExtensionContextValid() {
     try {
         // Check basic extension context
         if (!chrome?.runtime?.id) {
+            console.debug('Runtime ID not found');
             return false;
         }
 
         // Validate DOM readiness
         if (!document?.body) {
+            console.debug('Document body not ready');
             return false;
         }
 
-        // Check for restricted protocols
+        // Check for restricted protocols and domains
         const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        
+        // Expanded protocol restrictions
         if (protocol.startsWith('chrome-') || 
             protocol.startsWith('about:') || 
-            protocol.startsWith('chrome:')) {
+            protocol.startsWith('chrome:') ||
+            protocol.startsWith('edge:') ||
+            protocol.startsWith('brave:')) {
+            console.debug('Restricted protocol:', protocol);
+            return false;
+        }
+
+        // Secure email and sensitive domain restrictions
+        const restrictedDomains = [
+            'mail.proton.me',
+            'mail.google.com',
+            'outlook.live.com',
+            'outlook.office365.com',
+            'webmail'
+        ];
+
+        if (restrictedDomains.some(domain => hostname.includes(domain))) {
+            console.debug('Restricted domain:', hostname);
             return false;
         }
 
@@ -109,6 +131,7 @@ function isExtensionContextValid() {
                                typeof chrome.runtime.sendMessage === 'function' &&
                                typeof chrome.runtime.onMessage?.addListener === 'function';
         if (!canAccessRuntime) {
+            console.debug('Runtime API access restricted');
             return false;
         }
 
