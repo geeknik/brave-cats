@@ -15,17 +15,17 @@
         "coherence": {
           "type": "number",
           "minimum": 0,
-          "maximum": 1
+          "maximum": 100
         },
         "manifestationProbability": {
           "type": "number",
           "minimum": 0,
-          "maximum": 1
+          "maximum": 100
         },
         "realityDistortion": {
           "type": "number",
           "minimum": 0,
-          "maximum": 1
+          "maximum": 100
         }
       }
     }
