@@ -93,11 +93,25 @@ function isExtensionContextValid() {
     }
 }
 
+// Check if current site is blacklisted
+function isBlacklisted() {
+    const currentDomain = window.location.hostname.replace('www.', '');
+    return BLACKLISTED_DOMAINS.some(domain => 
+        currentDomain.includes(domain)
+    );
+}
+
 // Initialize quantum reality
 function initializeQuantumReality() {
     try {
         if (!isExtensionContextValid()) {
             throw new Error('Extension context invalid');
+        }
+
+        // Check blacklist before proceeding
+        if (isBlacklisted()) {
+            console.log('Site blacklisted, quantum cats contained');
+            return;
         }
 
         quantumState = new QuantumStateManager();

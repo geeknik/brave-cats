@@ -6,8 +6,19 @@ chrome.runtime.onInstalled.addListener(() => {
             coherence: 0.92,
             manifestationProbability: 0.75,
             realityDistortion: 0.5
-        }
+        },
+        blacklistEnabled: true
     });
+});
+
+// Handle blacklist status
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'CHECK_BLACKLIST_STATUS') {
+        chrome.storage.local.get('blacklistEnabled', (data) => {
+            sendResponse({ enabled: data.blacklistEnabled ?? true });
+        });
+        return true;
+    }
 });
 
 // Handle messages from content scripts
