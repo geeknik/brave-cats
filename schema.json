@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "blacklistedDomains": {
+      "type": "array",
+      "description": "List of blacklisted domains",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quantumState": {
+      "type": "object",
+      "description": "Quantum reality parameters",
+      "properties": {
+        "coherence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "manifestationProbability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "realityDistortion": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}

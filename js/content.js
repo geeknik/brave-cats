@@ -242,10 +242,15 @@ function initializeQuantumReality() {
         }
     
         if (message.type === 'GET_QUANTUM_STATS') {
+            const records = realityObserver?.takeRecords() || [];
+            const activeShards = records.filter(m => 
+                Date.now() - m.timestamp < 5000
+            ).length;
+        
             sendResponse({
-                shards: realityObserver ? realityObserver.takeRecords().length : 0,
+                shards: activeShards,
                 cats: quantumState?.manifestedEntities.size ?? 0,
-                stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
+                stability: Math.round((quantumState?.parameters.coherence ?? 0) * 100)
             });
             return true;
         }

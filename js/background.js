@@ -1,14 +1,16 @@
 // Enhanced background script with quantum storage handling
 chrome.runtime.onInstalled.addListener(() => {
-    // Initialize quantum storage
-    chrome.storage.local.set({
-        quantumState: {
-            coherence: 0.92,
-            manifestationProbability: 0.75,
-            realityDistortion: 0.5
-        },
-        blacklistEnabled: true,
-        blacklistedDomains: []
+    // Initialize quantum storage with persistence
+    chrome.storage.local.get(['blacklistedDomains'], (result) => {
+        chrome.storage.local.set({
+            quantumState: {
+                coherence: 0.92,
+                manifestationProbability: 0.75,
+                realityDistortion: 0.5
+            },
+            blacklistEnabled: true,
+            blacklistedDomains: result.blacklistedDomains || []
+        });
     });
 });
 
