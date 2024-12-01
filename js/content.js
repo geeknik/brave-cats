@@ -173,7 +173,6 @@ function initializeQuantumReality() {
             clearInterval(maintenanceInterval);
         }
     }, 30000);
-}
 
 // Handle initialization failures
 function handleInitializationError(err) {
