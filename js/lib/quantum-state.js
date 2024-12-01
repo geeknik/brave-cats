@@ -28,6 +28,22 @@ class QuantumStateManager {
             .join('');
     }
 
+    maintainQuantumCoherence() {
+        // Gradually decay coherence to prevent reality overflow
+        this.parameters.coherence *= 0.95;
+        
+        // Ensure minimum coherence level
+        if (this.parameters.coherence < 0.3) {
+            this.parameters.coherence = 0.3;
+        }
+        
+        // Update manifestation probability based on coherence
+        this.parameters.manifestationProbability = 
+            Math.min(0.75, this.parameters.coherence);
+            
+        this.lastCollapse = Date.now();
+    }
+
     // Rest of the implementation...
 }
 
