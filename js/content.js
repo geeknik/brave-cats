@@ -83,15 +83,38 @@ function handleRealityFluctuation(mutations) {
     }
 }
 
-// Simplified extension context validation
+// Enhanced extension context validation
 function isExtensionContextValid() {
     try {
-        return !!(
-            chrome?.runtime?.id &&
-            document.body &&
-            !window.location.protocol.startsWith('chrome-')
-        );
+        // Check basic extension context
+        if (!chrome?.runtime?.id) {
+            return false;
+        }
+
+        // Validate DOM readiness
+        if (!document?.body) {
+            return false;
+        }
+
+        // Check for restricted protocols
+        const protocol = window.location.protocol;
+        if (protocol.startsWith('chrome-') || 
+            protocol.startsWith('about:') || 
+            protocol.startsWith('chrome:')) {
+            return false;
+        }
+
+        // Verify we can access runtime APIs
+        const canAccessRuntime = chrome.runtime && 
+                               typeof chrome.runtime.sendMessage === 'function' &&
+                               typeof chrome.runtime.onMessage?.addListener === 'function';
+        if (!canAccessRuntime) {
+            return false;
+        }
+
+        return true;
     } catch (e) {
+        console.debug('Context validation failed:', e.message);
         return false;
     }
 }
@@ -228,16 +251,46 @@ function initializeQuantumReality() {
         }
     }, 30000);
 
-// Handle initialization failures
+// Enhanced initialization error handling
 function handleInitializationError(err) {
-    console.error('Quantum fluctuation detected:', err);
-    // Attempt recovery
-    setTimeout(() => {
-        if (isExtensionContextValid()) {
-            console.log('Attempting quantum reality recovery...');
-            initializeQuantumReality();
+    console.warn('Quantum fluctuation detected:', err);
+    
+    const MAX_RECOVERY_ATTEMPTS = 3;
+    let recoveryAttempts = 0;
+    
+    function attemptRecovery() {
+        if (recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
+            console.error('Max recovery attempts reached, quantum state unstable');
+            return;
         }
-    }, 5000);
+        
+        recoveryAttempts++;
+        console.log(`Attempting quantum reality recovery (${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS})...`);
+        
+        // Check context before attempting recovery
+        if (!isExtensionContextValid()) {
+            console.debug('Context still invalid, delaying recovery...');
+            setTimeout(attemptRecovery, 2000 * recoveryAttempts);
+            return;
+        }
+        
+        try {
+            // Clean up existing state
+            if (realityObserver) {
+                realityObserver.disconnect();
+            }
+            
+            // Attempt reinitialization
+            initializeQuantumReality();
+            recoveryAttempts = 0; // Reset on successful recovery
+        } catch (recoveryErr) {
+            console.warn('Recovery attempt failed:', recoveryErr);
+            setTimeout(attemptRecovery, 2000 * recoveryAttempts);
+        }
+    }
+    
+    // Start recovery process
+    setTimeout(attemptRecovery, 1000);
 }
 
 // Initial initialization with error handling
