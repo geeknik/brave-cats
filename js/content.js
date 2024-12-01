@@ -173,8 +173,10 @@ function initializeQuantumReality() {
             clearInterval(maintenanceInterval);
         }
     }, 30000);
+}
 
-} catch (err) {
+// Handle initialization failures
+function handleInitializationError(err) {
     console.error('Quantum fluctuation detected:', err);
     // Attempt recovery
     setTimeout(() => {
@@ -185,5 +187,9 @@ function initializeQuantumReality() {
     }, 5000);
 }
 
-// Initial initialization
-initializeQuantumReality();
+// Initial initialization with error handling
+try {
+    initializeQuantumReality();
+} catch (err) {
+    handleInitializationError(err);
+}
