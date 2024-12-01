@@ -275,16 +275,9 @@ function initializeQuantumReality() {
 
         // Initial ready notification
         notifyReady();
-    } catch (err) {
-        console.warn('Quantum initialization failed:', err);
-        // Cleanup on failure
-        if (realityObserver) {
-            realityObserver.disconnect();
-        }
-    }
 }
-    
-    // Handle ping messages with context validation
+
+// Handle ping messages with context validation
     const messageHandler = (message, sender, sendResponse) => {
         if (!isExtensionContextValid()) {
             console.warn('Extension context invalid during message handling');
