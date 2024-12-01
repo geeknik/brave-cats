@@ -242,16 +242,33 @@ function initializeQuantumReality() {
         }
     
         if (message.type === 'GET_QUANTUM_STATS') {
-            const records = realityObserver?.takeRecords() || [];
+            if (!quantumState || !realityObserver) {
+                sendResponse({
+                    shards: 0,
+                    cats: 0,
+                    stability: 0
+                });
+                return true;
+            }
+
+            const records = realityObserver.takeRecords();
+            const now = Date.now();
             const activeShards = records.filter(m => 
-                Date.now() - m.timestamp < 5000
+                now - (m.timestamp || now) < 5000
             ).length;
-        
-            sendResponse({
-                shards: activeShards,
-                cats: quantumState?.manifestedEntities.size ?? 0,
-                stability: Math.round((quantumState?.parameters.coherence ?? 0) * 100)
+
+            const stats = {
+                shards: Math.min(activeShards, 999),
+                cats: quantumState.manifestedEntities.size,
+                stability: Math.round(quantumState.parameters.coherence * 100)
+            };
+
+            // Ensure we never return undefined/null values
+            Object.entries(stats).forEach(([key, value]) => {
+                stats[key] = value ?? 0;
             });
+
+            sendResponse(stats);
             return true;
         }
     };
