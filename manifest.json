@@ -1,1 +1,39 @@
-{"manifest_version":3,"name":"Quantum Cat Overlay Engine","version":"0.1.0","description":"Transform your browsing reality through procedurally generated feline manifestations","permissions":["scripting","activeTab"],"host_permissions":["<all_urls>"],"background":{"service_worker":"js/background.js"},"content_scripts":[{"matches":["<all_urls>"],"js":["js/lib/simplex-noise.js","js/lib/quantum-state.js","js/lib/cat-generator.js","js/content.js"],"run_at":"document_end"}],"web_accessible_resources":[{"resources":["js/lib/*"],"matches":["<all_urls>"]},{"resources":["assets/*"],"matches":["<all_urls>"]}],"icons":{"16":"assets/icons/cat16.png","48":"assets/icons/cat48.png","128":"assets/icons/cat128.png"},"action":{"default_popup":"popup.html","default_icon":{"16":"assets/icons/cat16.png","48":"assets/icons/cat48.png","128":"assets/icons/cat128.png"}}}
+{
+  "manifest_version": 3,
+  "name": "Quantum Cat Overlay Engine",
+  "version": "0.1.0",
+  "description": "Transform your browsing reality through procedurally generated feline manifestations",
+  "icons": {
+    "16": "icons/cat16.png",
+    "48": "icons/cat48.png",
+    "128": "icons/cat128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/cat16.png",
+      "48": "icons/cat48.png",
+      "128": "icons/cat128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": [
+      "js/lib/simplex-noise.js",
+      "js/lib/quantum-state.js",
+      "js/lib/cat-generator.js",
+      "js/content.js"
+    ],
+    "run_at": "document_end"
+  }]
+}
