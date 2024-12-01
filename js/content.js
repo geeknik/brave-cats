@@ -83,29 +83,46 @@ function handleRealityFluctuation(mutations) {
     }
 }
 
-// Check if extension context is valid
+// Enhanced extension context validation
 function isExtensionContextValid() {
     try {
-        // Attempt to access chrome.runtime
-        if (!chrome?.runtime?.id) {
+        // Basic extension API checks
+        if (!chrome?.runtime?.id || !chrome?.runtime?.getManifest) {
+            return false;
+        }
+
+        // Verify manifest access
+        const manifest = chrome.runtime.getManifest();
+        if (!manifest?.name || !manifest?.version) {
             return false;
         }
         
         // Check if we're in a restricted context
         if (window.location.protocol === 'chrome-extension:' ||
-            document.documentElement.nodeName === 'parsererror') {
+            document.documentElement.nodeName === 'parsererror' ||
+            !document.documentElement.tagName ||
+            !document.body) {
             return false;
         }
 
-        // Additional security checks for mail clients
-        const restrictedPaths = ['/mail/', '/inbox/', '/u/'];
-        if (restrictedPaths.some(path => window.location.pathname.includes(path))) {
+        // Additional security checks
+        const restrictedPaths = ['/mail/', '/inbox/', '/u/', '/email/'];
+        const restrictedDomains = ['mail.google.com', 'outlook.com', 'mail.yahoo.com'];
+        
+        if (restrictedPaths.some(path => window.location.pathname.includes(path)) ||
+            restrictedDomains.some(domain => window.location.hostname.includes(domain))) {
+            return false;
+        }
+
+        // Verify DOM access
+        const testDiv = document.createElement('div');
+        if (!(testDiv instanceof HTMLElement)) {
             return false;
         }
 
         return true;
     } catch (e) {
-        console.debug('Extension context validation failed:', e);
+        console.debug('Extension context validation failed:', e.message);
         return false;
     }
 }
@@ -118,22 +135,55 @@ function isBlacklisted() {
     );
 }
 
-// Initialize quantum reality
+// Initialize quantum reality with enhanced validation
 function initializeQuantumReality() {
-    try {
-        if (!isExtensionContextValid()) {
-            throw new Error('Extension context invalid');
-        }
+    const MAX_INIT_ATTEMPTS = 3;
+    let initAttempts = 0;
 
-        // Check blacklist before proceeding
-        if (isBlacklisted()) {
-            console.log('Site blacklisted, quantum cats contained');
-            return;
-        }
+    function attemptInitialization() {
+        try {
+            if (!isExtensionContextValid()) {
+                throw new Error('Extension context invalid');
+            }
 
-        quantumState = new QuantumStateManager();
-        catGenerator = new CatGenerator(quantumState);
-        initializeQuantumField();
+            // Check blacklist before proceeding
+            if (isBlacklisted()) {
+                console.log('Site blacklisted, quantum cats contained');
+                return;
+            }
+
+            // Ensure clean state
+            if (realityObserver) {
+                realityObserver.disconnect();
+            }
+            
+            // Wait for DOM to be fully ready
+            if (document.readyState !== 'complete') {
+                window.addEventListener('load', () => attemptInitialization());
+                return;
+            }
+
+            quantumState = new QuantumStateManager();
+            catGenerator = new CatGenerator(quantumState);
+            initializeQuantumField();
+            
+            // Reset attempt counter on success
+            initAttempts = 0;
+            
+            console.log('🌌 Quantum reality initialized successfully');
+        } catch (err) {
+            console.warn(`Initialization attempt ${initAttempts + 1}/${MAX_INIT_ATTEMPTS} failed:`, err);
+            
+            if (++initAttempts < MAX_INIT_ATTEMPTS) {
+                setTimeout(() => attemptInitialization(), 2000 * initAttempts);
+            } else {
+                console.error('Max initialization attempts reached');
+            }
+        }
+    }
+
+    // Start initialization process
+    attemptInitialization();
         
         // Notify that content script is ready and establish heartbeat
         async function notifyReady() {
