@@ -89,6 +89,9 @@ try {
     catGenerator = new CatGenerator(quantumState);
     initializeQuantumField();
     
+    // Notify that content script is ready
+    chrome.runtime.sendMessage({ type: 'QUANTUM_READY' });
+    
     setInterval(() => {
         quantumState.maintainQuantumCoherence();
     }, 30000);

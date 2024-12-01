@@ -15,8 +15,25 @@ function updateQuantumDisplay(elementId, value) {
     }
 }
 
+// Track content script ready state
+let contentScriptReady = false;
+
+// Listen for content script ready message
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'QUANTUM_READY') {
+        contentScriptReady = true;
+    }
+});
+
 // Initialize quantum controls
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for content script to be ready
+    let retries = 0;
+    while (!contentScriptReady && retries < 10) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
+    }
+    
     const sliders = {
         distortionField: document.getElementById('distortionField'),
         manifestationProb: document.getElementById('manifestationProb'),
@@ -42,15 +59,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to safely send messages to content script
     async function sendQuantumMessage(message) {
+        if (!contentScriptReady) {
+            console.warn('Content script not ready');
+            return null;
+        }
+        
         try {
             const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
             if (!tab) {
                 console.warn('No active tab found');
                 return null;
             }
+            if (!tab.url || tab.url.startsWith('chrome://')) {
+                console.warn('Cannot inject into chrome:// URLs');
+                return null;
+            }
             return await chrome.tabs.sendMessage(tab.id, message);
         } catch (error) {
             console.warn('Quantum communication disrupted:', error);
+            // Reset ready state on communication error
+            contentScriptReady = false;
             return null;
         }
     }
