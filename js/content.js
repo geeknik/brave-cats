@@ -9,6 +9,35 @@ const QUANTUM_CONSTANTS = {
 let quantumState, catGenerator;
 let realityObserver;
 
+// Inject quantum styling into reality
+function injectQuantumStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .quantum-cat {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 8px rgba(158, 0, 255, 0.4));
+            opacity: 0.85;
+        }
+        .quantum-cat.manifesting {
+            animation: manifestation 0.5s ease-out forwards;
+        }
+        @keyframes manifestation {
+            from {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0);
+                opacity: 0.85;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Initialize quantum field and establish reality observation
 function initializeQuantumField() {
     realityObserver = new MutationObserver(handleRealityFluctuation);
