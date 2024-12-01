@@ -31,13 +31,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     
     if (message.type === 'getQuantumStats') {
-        // Return current quantum statistics
-        chrome.storage.local.get('quantumState', (data) => {
-            sendResponse({
-                shards: Math.floor(Math.random() * 42),
-                cats: Math.floor(Math.random() * 99),
-                stability: Math.round(data.quantumState?.coherence * 100 || 92)
-            });
+        // Get stats from active tab's content script
+        chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
+            try {
+                const response = await chrome.tabs.sendMessage(tabs[0].id, {
+                    type: 'GET_QUANTUM_STATS'
+                });
+                sendResponse(response);
+            } catch (error) {
+                sendResponse({
+                    shards: 0,
+                    cats: 0,
+                    stability: 0
+                });
+            }
         });
         return true;
     }

@@ -238,7 +238,16 @@ function initializeQuantumReality() {
                 type: 'QUANTUM_PONG',
                 timestamp: Date.now()
             });
-            return true; // Keep channel open for async response
+            return true;
+        }
+    
+        if (message.type === 'GET_QUANTUM_STATS') {
+            sendResponse({
+                shards: realityObserver ? realityObserver.takeRecords().length : 0,
+                cats: quantumState?.manifestedEntities.size ?? 0,
+                stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
+            });
+            return true;
         }
     };
 
