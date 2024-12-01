@@ -83,26 +83,76 @@ function handleRealityFluctuation(mutations) {
     }
 }
 
-// Initialize quantum reality
-try {
-    quantumState = new QuantumStateManager();
-    catGenerator = new CatGenerator(quantumState);
-    initializeQuantumField();
-    
-    // Notify that content script is ready and establish heartbeat
-    function notifyReady() {
-        chrome.runtime.sendMessage({ 
-            type: 'QUANTUM_READY',
-            stats: {
-                shards: realityObserver ? realityObserver.takeRecords().length : 0,
-                cats: quantumState.manifestedEntities.size,
-                stability: Math.round(quantumState.parameters.coherence * 100)
-            }
-        });
+// Check if extension context is valid
+function isExtensionContextValid() {
+    try {
+        // Attempt to access chrome.runtime
+        return chrome.runtime && chrome.runtime.id;
+    } catch (e) {
+        return false;
     }
+}
+
+// Initialize quantum reality
+function initializeQuantumReality() {
+    try {
+        if (!isExtensionContextValid()) {
+            throw new Error('Extension context invalid');
+        }
+
+        quantumState = new QuantumStateManager();
+        catGenerator = new CatGenerator(quantumState);
+        initializeQuantumField();
+        
+        // Notify that content script is ready and establish heartbeat
+        function notifyReady() {
+            if (!isExtensionContextValid()) {
+                console.warn('Extension context invalid during heartbeat');
+                clearInterval(heartbeatInterval);
+                return;
+            }
+
+            chrome.runtime.sendMessage({ 
+                type: 'QUANTUM_READY',
+                stats: {
+                    shards: realityObserver ? realityObserver.takeRecords().length : 0,
+                    cats: quantumState?.manifestedEntities.size ?? 0,
+                    stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
+                }
+            }).catch(error => {
+                console.warn('Failed to send heartbeat:', error);
+                clearInterval(heartbeatInterval);
+            });
+        }
+
+        // Start heartbeat with context validation
+        const heartbeatInterval = setInterval(() => {
+            if (isExtensionContextValid()) {
+                notifyReady();
+            } else {
+                console.warn('Extension context invalid, stopping heartbeat');
+                clearInterval(heartbeatInterval);
+            }
+        }, 2000);
+
+        // Initial ready notification
+        notifyReady();
+    } catch (err) {
+        console.warn('Quantum initialization failed:', err);
+        // Cleanup on failure
+        if (realityObserver) {
+            realityObserver.disconnect();
+        }
+    }
+}
     
-    // Handle ping messages
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // Handle ping messages with context validation
+    const messageHandler = (message, sender, sendResponse) => {
+        if (!isExtensionContextValid()) {
+            console.warn('Extension context invalid during message handling');
+            return;
+        }
+
         if (message.type === 'QUANTUM_PING') {
             sendResponse({ 
                 type: 'QUANTUM_PONG',
@@ -110,16 +160,30 @@ try {
             });
             return true; // Keep channel open for async response
         }
-    });
+    };
 
-    // Notify ready state
-    notifyReady();
-    setInterval(notifyReady, 2000); // Reduced frequency to avoid noise
-    
-    setInterval(() => {
-        quantumState.maintainQuantumCoherence();
+    chrome.runtime.onMessage.addListener(messageHandler);
+
+    // Start quantum maintenance with context validation
+    const maintenanceInterval = setInterval(() => {
+        if (isExtensionContextValid() && quantumState) {
+            quantumState.maintainQuantumCoherence();
+        } else {
+            console.warn('Extension context invalid, stopping maintenance');
+            clearInterval(maintenanceInterval);
+        }
     }, 30000);
-    
+
 } catch (err) {
     console.error('Quantum fluctuation detected:', err);
+    // Attempt recovery
+    setTimeout(() => {
+        if (isExtensionContextValid()) {
+            console.log('Attempting quantum reality recovery...');
+            initializeQuantumReality();
+        }
+    }, 5000);
 }
+
+// Initial initialization
+initializeQuantumReality();
