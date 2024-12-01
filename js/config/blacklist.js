@@ -10,7 +10,9 @@ const BLACKLISTED_DOMAINS = [
     'washingtonpost.com',
     'theguardian.com',
     'bbc.com',
-    'aljazeera.com'
+    'aljazeera.com',
+    'proton.me',
+    'mail.proton.me'
 ];
 
 // Export for quantum entanglement

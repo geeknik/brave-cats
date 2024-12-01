@@ -87,8 +87,25 @@ function handleRealityFluctuation(mutations) {
 function isExtensionContextValid() {
     try {
         // Attempt to access chrome.runtime
-        return chrome.runtime && chrome.runtime.id;
+        if (!chrome?.runtime?.id) {
+            return false;
+        }
+        
+        // Check if we're in a restricted context
+        if (window.location.protocol === 'chrome-extension:' ||
+            document.documentElement.nodeName === 'parsererror') {
+            return false;
+        }
+
+        // Additional security checks for mail clients
+        const restrictedPaths = ['/mail/', '/inbox/', '/u/'];
+        if (restrictedPaths.some(path => window.location.pathname.includes(path))) {
+            return false;
+        }
+
+        return true;
     } catch (e) {
+        console.debug('Extension context validation failed:', e);
         return false;
     }
 }
