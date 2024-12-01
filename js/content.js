@@ -265,33 +265,34 @@ function initializeQuantumReality() {
         }
     
         if (message.type === 'GET_QUANTUM_STATS') {
-            if (!quantumState || !realityObserver) {
+            try {
+                if (!quantumState || !realityObserver) {
+                    throw new Error('Quantum state not initialized');
+                }
+
+                const records = realityObserver.takeRecords();
+                const now = Date.now();
+                const activeShards = records.filter(m => 
+                    now - (m.timestamp || now) < 5000
+                ).length;
+
+                // Ensure numeric values and proper formatting
+                const stats = {
+                    shards: Math.max(0, Math.min(activeShards || 0, 999)),
+                    cats: Math.max(0, quantumState.manifestedEntities?.size || 0),
+                    stability: Math.max(0, Math.min(Math.round(quantumState.parameters?.coherence || 0), 100))
+                };
+
+                console.debug('Quantum stats:', stats); // Debug log
+                sendResponse(stats);
+            } catch (error) {
+                console.warn('Stats calculation error:', error);
                 sendResponse({
                     shards: 0,
                     cats: 0,
                     stability: 0
                 });
-                return true;
             }
-
-            const records = realityObserver.takeRecords();
-            const now = Date.now();
-            const activeShards = records.filter(m => 
-                now - (m.timestamp || now) < 5000
-            ).length;
-
-            const stats = {
-                shards: Math.min(activeShards, 999),
-                cats: quantumState.manifestedEntities.size,
-                stability: Math.round(quantumState.parameters.coherence)
-            };
-
-            // Ensure we never return undefined/null values
-            Object.entries(stats).forEach(([key, value]) => {
-                stats[key] = value ?? 0;
-            });
-
-            sendResponse(stats);
             return true;
         }
     };
