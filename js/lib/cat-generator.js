@@ -114,9 +114,35 @@ class CatGenerator {
     }
 
     applyQuantumEffects(svg, coherence) {
-        // Apply quantum visual effects based on coherence
-        const hue = Math.floor(coherence * 270); // Purple-ish glow
-        svg.style.filter = `drop-shadow(0 0 ${coherence * 10}px hsl(${hue}, 100%, 50%))`;
+        // Determine if this cat should have special glow effects (30% chance)
+        const hasSpecialGlow = Math.random() < 0.3;
+        
+        if (hasSpecialGlow) {
+            // Generate random color for special glow
+            const specialHue = Math.floor(Math.random() * 360);
+            const specialSaturation = 70 + Math.random() * 30;
+            const specialLightness = 50 + Math.random() * 20;
+            
+            // Apply enhanced glow effect
+            svg.style.filter = `
+                drop-shadow(0 0 ${coherence * 15}px hsl(${specialHue}, ${specialSaturation}%, ${specialLightness}%))
+                brightness(1.2)
+            `;
+            
+            // Add subtle color tint to the cat
+            svg.querySelectorAll('path').forEach(path => {
+                const currentFill = path.getAttribute('fill');
+                if (currentFill === '#333') {
+                    const tintHue = (specialHue + 30) % 360;
+                    path.setAttribute('fill', `hsl(${tintHue}, 30%, 20%)`);
+                }
+            });
+        } else {
+            // Standard quantum effects
+            const hue = Math.floor(coherence * 270);
+            svg.style.filter = `drop-shadow(0 0 ${coherence * 10}px hsl(${hue}, 100%, 50%))`;
+        }
+        
         svg.classList.add('manifesting');
         
         // Add to DOM
