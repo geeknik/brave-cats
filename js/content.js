@@ -140,6 +140,32 @@ function initializeQuantumReality() {
     const MAX_INIT_ATTEMPTS = 3;
     let initAttempts = 0;
 
+    // Notify that content script is ready and establish heartbeat
+    async function notifyReady() {
+        if (!isExtensionContextValid()) {
+            console.warn('Extension context invalid during heartbeat');
+            return false;
+        }
+
+        try {
+            await chrome.runtime.sendMessage({ 
+                type: 'QUANTUM_READY',
+                stats: {
+                    shards: realityObserver ? realityObserver.takeRecords().length : 0,
+                    cats: quantumState?.manifestedEntities.size ?? 0,
+                    stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
+                }
+            });
+            return true;
+        } catch (error) {
+            // Ignore "receiving end does not exist" errors
+            if (!error.message.includes("Receiving end does not exist")) {
+                console.warn('Failed to send heartbeat:', error);
+            }
+            return false;
+        }
+    }
+
     function attemptInitialization() {
         try {
             if (!isExtensionContextValid()) {
@@ -170,6 +196,9 @@ function initializeQuantumReality() {
             // Reset attempt counter on success
             initAttempts = 0;
             
+            // Initial ready notification
+            notifyReady();
+            
             console.log('🌌 Quantum reality initialized successfully');
         } catch (err) {
             console.warn(`Initialization attempt ${initAttempts + 1}/${MAX_INIT_ATTEMPTS} failed:`, err);
@@ -184,32 +213,6 @@ function initializeQuantumReality() {
 
     // Start initialization process
     attemptInitialization();
-        
-        // Notify that content script is ready and establish heartbeat
-        async function notifyReady() {
-            if (!isExtensionContextValid()) {
-                console.warn('Extension context invalid during heartbeat');
-                return false;
-            }
-
-            try {
-                await chrome.runtime.sendMessage({ 
-                    type: 'QUANTUM_READY',
-                    stats: {
-                        shards: realityObserver ? realityObserver.takeRecords().length : 0,
-                        cats: quantumState?.manifestedEntities.size ?? 0,
-                        stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
-                    }
-                });
-                return true;
-            } catch (error) {
-                // Ignore "receiving end does not exist" errors
-                if (!error.message.includes("Receiving end does not exist")) {
-                    console.warn('Failed to send heartbeat:', error);
-                }
-                return false;
-            }
-        }
 
         // Start heartbeat with enhanced context validation and recovery
         let heartbeatAttempts = 0;
