@@ -83,26 +83,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Update stats with error handling
+    // Update stats with enhanced error handling and retry logic
     async function updateQuantumStats() {
-        const response = await sendQuantumMessage({type: 'getQuantumStats'});
-        if (response) {
-            document.getElementById('shardCount').textContent = 
-                response.shards > 42 ? '∞' : response.shards;
-            document.getElementById('catCount').textContent = 
-                response.cats > 99 ? 'ℵ₀' : response.cats;
-            document.getElementById('fieldStability').textContent = 
-                response.stability > 98 ? 'ψ' : `${response.stability}%`;
-        } else {
-            // Set default values if communication fails
-            document.getElementById('shardCount').textContent = '?';
-            document.getElementById('catCount').textContent = '?';
-            document.getElementById('fieldStability').textContent = '?';
+        let retries = 0;
+        const maxRetries = 3;
+        
+        while (retries < maxRetries) {
+            try {
+                const response = await sendQuantumMessage({type: 'getQuantumStats'});
+                if (response) {
+                    document.getElementById('shardCount').textContent = 
+                        response.shards > 42 ? '∞' : response.shards;
+                    document.getElementById('catCount').textContent = 
+                        response.cats > 99 ? 'ℵ₀' : response.cats;
+                    document.getElementById('fieldStability').textContent = 
+                        response.stability > 98 ? 'ψ' : `${response.stability}%`;
+                    return; // Success, exit retry loop
+                }
+            } catch (error) {
+                console.warn(`Retry ${retries + 1}/${maxRetries} failed:`, error);
+            }
+            
+            retries++;
+            if (retries < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 500)); // Wait before retry
+            }
         }
+        
+        // Set default values after all retries fail
+        document.getElementById('shardCount').textContent = '?';
+        document.getElementById('catCount').textContent = '?';
+        document.getElementById('fieldStability').textContent = '?';
     }
 
-    // Update stats periodically with error handling
-    const statsInterval = setInterval(updateQuantumStats, 1000);
+    // Update stats periodically with dynamic interval
+    let statsInterval;
+    
+    function startStatsUpdates() {
+        updateQuantumStats(); // Initial update
+        statsInterval = setInterval(updateQuantumStats, 1000);
+    }
+    
+    // Start updates when ready
+    if (contentScriptReady) {
+        startStatsUpdates();
+    } else {
+        // Wait for ready message
+        chrome.runtime.onMessage.addListener((message) => {
+            if (message.type === 'QUANTUM_READY') {
+                contentScriptReady = true;
+                startStatsUpdates();
+            }
+        });
+    }
 
     // Cleanup interval when popup closes
     window.addEventListener('unload', () => {

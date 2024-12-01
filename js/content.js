@@ -89,8 +89,20 @@ try {
     catGenerator = new CatGenerator(quantumState);
     initializeQuantumField();
     
-    // Notify that content script is ready
-    chrome.runtime.sendMessage({ type: 'QUANTUM_READY' });
+    // Notify that content script is ready and establish heartbeat
+    function notifyReady() {
+        chrome.runtime.sendMessage({ 
+            type: 'QUANTUM_READY',
+            stats: {
+                shards: realityObserver ? realityObserver.takeRecords().length : 0,
+                cats: quantumState.manifestedEntities.size,
+                stability: Math.round(quantumState.parameters.coherence * 100)
+            }
+        });
+    }
+    
+    notifyReady();
+    setInterval(notifyReady, 1000);
     
     setInterval(() => {
         quantumState.maintainQuantumCoherence();
