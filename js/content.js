@@ -83,46 +83,15 @@ function handleRealityFluctuation(mutations) {
     }
 }
 
-// Enhanced extension context validation
+// Simplified extension context validation
 function isExtensionContextValid() {
     try {
-        // Basic extension API checks
-        if (!chrome?.runtime?.id || !chrome?.runtime?.getManifest) {
-            return false;
-        }
-
-        // Verify manifest access
-        const manifest = chrome.runtime.getManifest();
-        if (!manifest?.name || !manifest?.version) {
-            return false;
-        }
-        
-        // Check if we're in a restricted context
-        if (window.location.protocol === 'chrome-extension:' ||
-            document.documentElement.nodeName === 'parsererror' ||
-            !document.documentElement.tagName ||
-            !document.body) {
-            return false;
-        }
-
-        // Additional security checks
-        const restrictedPaths = ['/mail/', '/inbox/', '/u/', '/email/'];
-        const restrictedDomains = ['mail.google.com', 'outlook.com', 'mail.yahoo.com'];
-        
-        if (restrictedPaths.some(path => window.location.pathname.includes(path)) ||
-            restrictedDomains.some(domain => window.location.hostname.includes(domain))) {
-            return false;
-        }
-
-        // Verify DOM access
-        const testDiv = document.createElement('div');
-        if (!(testDiv instanceof HTMLElement)) {
-            return false;
-        }
-
-        return true;
+        return !!(
+            chrome?.runtime?.id &&
+            document.body &&
+            !window.location.protocol.startsWith('chrome-')
+        );
     } catch (e) {
-        console.debug('Extension context validation failed:', e.message);
         return false;
     }
 }
@@ -214,64 +183,21 @@ function initializeQuantumReality() {
     // Start initialization process
     attemptInitialization();
 
-        // Start heartbeat with enhanced context validation and recovery
-        let heartbeatAttempts = 0;
-        const MAX_HEARTBEAT_ATTEMPTS = 5;
+        // Simplified heartbeat mechanism
         const HEARTBEAT_INTERVAL = 2000;
-        const RECOVERY_DELAY = 5000;
-        const MAX_RECOVERY_ATTEMPTS = 3;
-        let recoveryAttempts = 0;
         
-        function startHeartbeat() {
-            return setInterval(async () => {
-                try {
-                    // Verify extension context before each heartbeat
-                    if (!chrome?.runtime?.id) {
-                        throw new Error('Extension context invalid');
-                    }
-
-                    const success = await notifyReady();
-                    
-                    if (success) {
-                        heartbeatAttempts = 0;
-                        recoveryAttempts = 0; // Reset recovery counter on success
-                    } else {
-                        heartbeatAttempts++;
-                        if (heartbeatAttempts >= MAX_HEARTBEAT_ATTEMPTS) {
-                            throw new Error('Max heartbeat attempts reached');
-                        }
-                    }
-                } catch (err) {
-                    console.warn('Heartbeat disrupted:', err);
-                    clearInterval(heartbeatInterval);
-                    
-                    if (recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
-                        scheduleHeartbeatRecovery();
-                    } else {
-                        console.error('Max recovery attempts reached, heartbeat permanently disabled');
-                    }
+        let heartbeatInterval = setInterval(async () => {
+            try {
+                if (isExtensionContextValid()) {
+                    await notifyReady();
                 }
-            }, HEARTBEAT_INTERVAL);
-        }
-
-        function scheduleHeartbeatRecovery() {
-            recoveryAttempts++;
-            console.log(`Attempting heartbeat recovery (${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS})...`);
-            
-            setTimeout(() => {
-                heartbeatAttempts = 0;
-                if (chrome?.runtime?.id) {
-                    heartbeatInterval = startHeartbeat();
-                } else {
-                    console.warn('Extension context still invalid, recovery failed');
-                    if (recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
-                        scheduleHeartbeatRecovery();
-                    }
+            } catch (err) {
+                // Ignore connection errors
+                if (!err.message.includes("Receiving end does not exist")) {
+                    console.debug('Heartbeat skipped:', err.message);
                 }
-            }, RECOVERY_DELAY);
-        }
-
-        let heartbeatInterval = startHeartbeat();
+            }
+        }, HEARTBEAT_INTERVAL);
 
         // Initial ready notification
         notifyReady();
@@ -295,33 +221,12 @@ function initializeQuantumReality() {
 
     chrome.runtime.onMessage.addListener(messageHandler);
 
-    // Start quantum maintenance with robust context validation and recovery
-    let maintenanceInterval;
-    
-    function startMaintenanceLoop() {
-        if (maintenanceInterval) {
-            clearInterval(maintenanceInterval);
+    // Simplified maintenance loop
+    const maintenanceInterval = setInterval(() => {
+        if (isExtensionContextValid() && quantumState) {
+            quantumState.maintainQuantumCoherence();
         }
-        
-        maintenanceInterval = setInterval(() => {
-            try {
-                if (!chrome?.runtime?.id) {
-                    throw new Error('Extension context invalid');
-                }
-                
-                if (quantumState) {
-                    quantumState.maintainQuantumCoherence();
-                }
-            } catch (err) {
-                console.warn('Maintenance disrupted:', err);
-                clearInterval(maintenanceInterval);
-                // Attempt recovery after delay
-                setTimeout(startMaintenanceLoop, 5000);
-            }
-        }, 30000);
-    }
-    
-    startMaintenanceLoop();
+    }, 30000);
 
 // Handle initialization failures
 function handleInitializationError(err) {
