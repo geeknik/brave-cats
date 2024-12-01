@@ -130,41 +130,60 @@ function initializeQuantumReality() {
             }
         }
 
-        // Start heartbeat with context validation and automatic recovery
+        // Start heartbeat with enhanced context validation and recovery
         let heartbeatAttempts = 0;
-        const MAX_HEARTBEAT_ATTEMPTS = 3;
+        const MAX_HEARTBEAT_ATTEMPTS = 5;
         const HEARTBEAT_INTERVAL = 2000;
         const RECOVERY_DELAY = 5000;
+        const MAX_RECOVERY_ATTEMPTS = 3;
+        let recoveryAttempts = 0;
         
         function startHeartbeat() {
             return setInterval(async () => {
-                if (!isExtensionContextValid()) {
-                    console.warn('Extension context invalid, stopping heartbeat');
-                    clearInterval(heartbeatInterval);
-                    scheduleHeartbeatRecovery();
-                    return;
-                }
+                try {
+                    // Verify extension context before each heartbeat
+                    if (!chrome?.runtime?.id) {
+                        throw new Error('Extension context invalid');
+                    }
 
-                const success = await notifyReady();
-                
-                if (success) {
-                    heartbeatAttempts = 0;
-                } else {
-                    heartbeatAttempts++;
-                    if (heartbeatAttempts >= MAX_HEARTBEAT_ATTEMPTS) {
-                        console.warn('Max heartbeat attempts reached, attempting recovery');
-                        clearInterval(heartbeatInterval);
+                    const success = await notifyReady();
+                    
+                    if (success) {
+                        heartbeatAttempts = 0;
+                        recoveryAttempts = 0; // Reset recovery counter on success
+                    } else {
+                        heartbeatAttempts++;
+                        if (heartbeatAttempts >= MAX_HEARTBEAT_ATTEMPTS) {
+                            throw new Error('Max heartbeat attempts reached');
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Heartbeat disrupted:', err);
+                    clearInterval(heartbeatInterval);
+                    
+                    if (recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
                         scheduleHeartbeatRecovery();
+                    } else {
+                        console.error('Max recovery attempts reached, heartbeat permanently disabled');
                     }
                 }
             }, HEARTBEAT_INTERVAL);
         }
 
         function scheduleHeartbeatRecovery() {
+            recoveryAttempts++;
+            console.log(`Attempting heartbeat recovery (${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS})...`);
+            
             setTimeout(() => {
-                console.log('Attempting heartbeat recovery...');
                 heartbeatAttempts = 0;
-                heartbeatInterval = startHeartbeat();
+                if (chrome?.runtime?.id) {
+                    heartbeatInterval = startHeartbeat();
+                } else {
+                    console.warn('Extension context still invalid, recovery failed');
+                    if (recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
+                        scheduleHeartbeatRecovery();
+                    }
+                }
             }, RECOVERY_DELAY);
         }
 
