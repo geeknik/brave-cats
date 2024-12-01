@@ -133,26 +133,42 @@ function initializeQuantumReality() {
         // Start heartbeat with context validation and automatic recovery
         let heartbeatAttempts = 0;
         const MAX_HEARTBEAT_ATTEMPTS = 3;
+        const HEARTBEAT_INTERVAL = 2000;
+        const RECOVERY_DELAY = 5000;
         
-        const heartbeatInterval = setInterval(async () => {
-            if (!isExtensionContextValid()) {
-                console.warn('Extension context invalid, stopping heartbeat');
-                clearInterval(heartbeatInterval);
-                return;
-            }
-
-            const success = await notifyReady();
-            
-            if (success) {
-                heartbeatAttempts = 0;
-            } else {
-                heartbeatAttempts++;
-                if (heartbeatAttempts >= MAX_HEARTBEAT_ATTEMPTS) {
-                    console.warn('Max heartbeat attempts reached, stopping heartbeat');
+        function startHeartbeat() {
+            return setInterval(async () => {
+                if (!isExtensionContextValid()) {
+                    console.warn('Extension context invalid, stopping heartbeat');
                     clearInterval(heartbeatInterval);
+                    scheduleHeartbeatRecovery();
+                    return;
                 }
-            }
-        }, 2000);
+
+                const success = await notifyReady();
+                
+                if (success) {
+                    heartbeatAttempts = 0;
+                } else {
+                    heartbeatAttempts++;
+                    if (heartbeatAttempts >= MAX_HEARTBEAT_ATTEMPTS) {
+                        console.warn('Max heartbeat attempts reached, attempting recovery');
+                        clearInterval(heartbeatInterval);
+                        scheduleHeartbeatRecovery();
+                    }
+                }
+            }, HEARTBEAT_INTERVAL);
+        }
+
+        function scheduleHeartbeatRecovery() {
+            setTimeout(() => {
+                console.log('Attempting heartbeat recovery...');
+                heartbeatAttempts = 0;
+                heartbeatInterval = startHeartbeat();
+            }, RECOVERY_DELAY);
+        }
+
+        let heartbeatInterval = startHeartbeat();
 
         // Initial ready notification
         notifyReady();
