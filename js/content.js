@@ -277,13 +277,19 @@ function initializeQuantumReality() {
                 ).length;
 
                 // Ensure numeric values and proper formatting
+                // Ensure valid numeric values with proper bounds
                 const stats = {
                     shards: Math.max(0, Math.min(activeShards || 0, 999)),
-                    cats: Math.max(0, quantumState.manifestedEntities?.size || 0),
-                    stability: Math.max(0, Math.min(Math.round(quantumState.parameters?.coherence || 0), 100))
+                    cats: Math.max(0, Math.min(quantumState.manifestedEntities?.size || 0, 999)),
+                    stability: Math.max(0, Math.min(Math.round((quantumState.parameters?.coherence || 0) * 100), 100))
                 };
 
-                console.debug('Quantum stats:', stats); // Debug log
+                // Validate all stats are numbers
+                if (Object.values(stats).some(val => typeof val !== 'number' || isNaN(val))) {
+                    throw new Error('Invalid stats values detected');
+                }
+
+                console.debug('Quantum stats:', stats);
                 sendResponse(stats);
             } catch (error) {
                 console.warn('Stats calculation error:', error);

@@ -152,17 +152,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const catCount = document.getElementById('catCount');
                     const fieldStability = document.getElementById('fieldStability');
 
-                    if (shardCount) shardCount.textContent = 
-                        Number.isFinite(response.shards) ? 
-                            (response.shards > 42 ? '∞' : response.shards) : '0';
+                    // Ensure numeric values and proper formatting
+                    if (shardCount) {
+                        const shards = parseInt(response.shards);
+                        shardCount.textContent = !isNaN(shards) ? 
+                            (shards > 42 ? '∞' : shards) : '0';
+                    }
                     
-                    if (catCount) catCount.textContent = 
-                        Number.isFinite(response.cats) ? 
-                            (response.cats > 99 ? 'ℵ₀' : response.cats) : '0';
+                    if (catCount) {
+                        const cats = parseInt(response.cats);
+                        catCount.textContent = !isNaN(cats) ? 
+                            (cats > 99 ? 'ℵ₀' : cats) : '0';
+                    }
                     
-                    if (fieldStability) fieldStability.textContent = 
-                        Number.isFinite(response.stability) ? 
-                            (response.stability > 98 ? 'ψ' : `${response.stability}%`) : '0%';
+                    if (fieldStability) {
+                        const stability = parseInt(response.stability);
+                        fieldStability.textContent = !isNaN(stability) ? 
+                            (stability > 98 ? 'ψ' : `${stability}%`) : '0%';
+                    }
                     
                     console.debug('Stats updated:', response);
                     return;
