@@ -29,32 +29,57 @@ document.addEventListener('DOMContentLoaded', () => {
             const value = parseFloat(e.target.value);
             updateQuantumDisplay(`${key === 'distortionField' ? 'distortion' : key}Value`, value);
             
-            // Update quantum state
-            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-                chrome.tabs.sendMessage(tabs[0].id, {
-                    type: 'updateQuantumState',
-                    parameter: key,
-                    value: value / 100
-                });
+            // Update quantum state with error handling
+            sendQuantumMessage({
+                type: 'updateQuantumState',
+                parameter: key,
+                value: value / 100
+            }).catch(error => {
+                console.warn('Failed to update quantum state:', error);
             });
         });
     });
 
-    // Update stats periodically
-    setInterval(() => {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {type: 'getQuantumStats'}, (response) => {
-                if (response) {
-                    document.getElementById('shardCount').textContent = 
-                        response.shards > 42 ? '∞' : response.shards;
-                    document.getElementById('catCount').textContent = 
-                        response.cats > 99 ? 'ℵ₀' : response.cats;
-                    document.getElementById('fieldStability').textContent = 
-                        response.stability > 98 ? 'ψ' : `${response.stability}%`;
-                }
-            });
-        });
-    }, 1000);
+    // Function to safely send messages to content script
+    async function sendQuantumMessage(message) {
+        try {
+            const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+            if (!tab) {
+                console.warn('No active tab found');
+                return null;
+            }
+            return await chrome.tabs.sendMessage(tab.id, message);
+        } catch (error) {
+            console.warn('Quantum communication disrupted:', error);
+            return null;
+        }
+    }
+
+    // Update stats with error handling
+    async function updateQuantumStats() {
+        const response = await sendQuantumMessage({type: 'getQuantumStats'});
+        if (response) {
+            document.getElementById('shardCount').textContent = 
+                response.shards > 42 ? '∞' : response.shards;
+            document.getElementById('catCount').textContent = 
+                response.cats > 99 ? 'ℵ₀' : response.cats;
+            document.getElementById('fieldStability').textContent = 
+                response.stability > 98 ? 'ψ' : `${response.stability}%`;
+        } else {
+            // Set default values if communication fails
+            document.getElementById('shardCount').textContent = '?';
+            document.getElementById('catCount').textContent = '?';
+            document.getElementById('fieldStability').textContent = '?';
+        }
+    }
+
+    // Update stats periodically with error handling
+    const statsInterval = setInterval(updateQuantumStats, 1000);
+
+    // Cleanup interval when popup closes
+    window.addEventListener('unload', () => {
+        clearInterval(statsInterval);
+    });
 
     // Add quantum hover effects
     document.querySelectorAll('.quantum-control').forEach(control => {
