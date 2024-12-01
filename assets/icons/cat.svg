@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="quantum-noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="4" seed="42"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </defs>
+  <path d="M64 16c-8 0-16 4-20 12-12-4-24-4-32 4-8 8-8 20-4 32-8 4-12 12-12 20s4 16 12 20c-4 12-4 24 4 32 8 8 20 8 32 4 4 8 12 12 20 12s16-4 20-12c12 4 24 4 32-4 8-8 8-20 4-32 8-4 12-12 12-20s-4-16-12-20c4-12 4-24-4-32-8-8-20-8-32-4-4-8-12-12-20-12z"
+        fill="#1a1a1a" filter="url(#quantum-noise)"/>
+  <circle cx="48" cy="56" r="4" fill="#fff"/>
+  <circle cx="80" cy="56" r="4" fill="#fff"/>
+  <path d="M64 72c-8 0-16 4-16 12s8 12 16 12 16-4 16-12-8-12-16-12z" 
+        fill="#fff" opacity="0.8"/>
+</svg>
