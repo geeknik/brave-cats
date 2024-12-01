@@ -1,1 +1,2 @@
-// Previously shared cat-generator.js code...
+import { CatGenerator } from '../../js/lib/cat-generator.js';
+export { CatGenerator };
