@@ -105,33 +105,52 @@ function initializeQuantumReality() {
         initializeQuantumField();
         
         // Notify that content script is ready and establish heartbeat
-        function notifyReady() {
+        async function notifyReady() {
             if (!isExtensionContextValid()) {
                 console.warn('Extension context invalid during heartbeat');
+                return false;
+            }
+
+            try {
+                await chrome.runtime.sendMessage({ 
+                    type: 'QUANTUM_READY',
+                    stats: {
+                        shards: realityObserver ? realityObserver.takeRecords().length : 0,
+                        cats: quantumState?.manifestedEntities.size ?? 0,
+                        stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
+                    }
+                });
+                return true;
+            } catch (error) {
+                // Ignore "receiving end does not exist" errors
+                if (!error.message.includes("Receiving end does not exist")) {
+                    console.warn('Failed to send heartbeat:', error);
+                }
+                return false;
+            }
+        }
+
+        // Start heartbeat with context validation and automatic recovery
+        let heartbeatAttempts = 0;
+        const MAX_HEARTBEAT_ATTEMPTS = 3;
+        
+        const heartbeatInterval = setInterval(async () => {
+            if (!isExtensionContextValid()) {
+                console.warn('Extension context invalid, stopping heartbeat');
                 clearInterval(heartbeatInterval);
                 return;
             }
 
-            chrome.runtime.sendMessage({ 
-                type: 'QUANTUM_READY',
-                stats: {
-                    shards: realityObserver ? realityObserver.takeRecords().length : 0,
-                    cats: quantumState?.manifestedEntities.size ?? 0,
-                    stability: Math.round(quantumState?.parameters.coherence * 100) ?? 0
-                }
-            }).catch(error => {
-                console.warn('Failed to send heartbeat:', error);
-                clearInterval(heartbeatInterval);
-            });
-        }
-
-        // Start heartbeat with context validation
-        const heartbeatInterval = setInterval(() => {
-            if (isExtensionContextValid()) {
-                notifyReady();
+            const success = await notifyReady();
+            
+            if (success) {
+                heartbeatAttempts = 0;
             } else {
-                console.warn('Extension context invalid, stopping heartbeat');
-                clearInterval(heartbeatInterval);
+                heartbeatAttempts++;
+                if (heartbeatAttempts >= MAX_HEARTBEAT_ATTEMPTS) {
+                    console.warn('Max heartbeat attempts reached, stopping heartbeat');
+                    clearInterval(heartbeatInterval);
+                }
             }
         }, 2000);
 
