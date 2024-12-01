@@ -101,8 +101,20 @@ try {
         });
     }
     
+    // Handle ping messages
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.type === 'QUANTUM_PING') {
+            sendResponse({ 
+                type: 'QUANTUM_PONG',
+                timestamp: Date.now()
+            });
+            return true; // Keep channel open for async response
+        }
+    });
+
+    // Notify ready state
     notifyReady();
-    setInterval(notifyReady, 1000);
+    setInterval(notifyReady, 2000); // Reduced frequency to avoid noise
     
     setInterval(() => {
         quantumState.maintainQuantumCoherence();

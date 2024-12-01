@@ -60,27 +60,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to safely send messages to content script
     async function sendQuantumMessage(message) {
         if (!contentScriptReady) {
-            console.warn('Content script not ready');
-            return null;
+            await checkContentScriptStatus();
+            if (!contentScriptReady) {
+                throw new Error('Content script not ready after status check');
+            }
         }
         
         try {
             const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
             if (!tab) {
-                console.warn('No active tab found');
-                return null;
+                throw new Error('No active tab found');
             }
             if (!tab.url || tab.url.startsWith('chrome://')) {
-                console.warn('Cannot inject into chrome:// URLs');
-                return null;
+                throw new Error('Cannot inject into chrome:// URLs');
             }
-            return await chrome.tabs.sendMessage(tab.id, message);
+            
+            const response = await chrome.tabs.sendMessage(tab.id, {
+                ...message,
+                timestamp: Date.now()
+            }).catch(error => {
+                throw new Error(`Message send failed: ${error.message}`);
+            });
+            
+            return response;
         } catch (error) {
             console.warn('Quantum communication disrupted:', error);
-            // Reset ready state on communication error
             contentScriptReady = false;
-            return null;
+            updateConnectionStatus('disconnected');
+            throw error;
         }
+    }
+
+    // Check content script status
+    async function checkContentScriptStatus() {
+        try {
+            const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+            if (!tab) return false;
+            
+            const response = await chrome.tabs.sendMessage(tab.id, {
+                type: 'QUANTUM_PING',
+                timestamp: Date.now()
+            });
+            
+            contentScriptReady = response && response.type === 'QUANTUM_PONG';
+            updateConnectionStatus(contentScriptReady ? 'connected' : 'disconnected');
+            return contentScriptReady;
+        } catch (error) {
+            console.warn('Status check failed:', error);
+            contentScriptReady = false;
+            updateConnectionStatus('disconnected');
+            return false;
+        }
+    }
+
+    // Update connection status display
+    function updateConnectionStatus(status) {
+        const statsDiv = document.querySelector('.quantum-stats');
+        let statusElement = document.getElementById('connectionStatus');
+        
+        if (!statusElement) {
+            statusElement = document.createElement('p');
+            statusElement.id = 'connectionStatus';
+            statsDiv.insertBefore(statusElement, statsDiv.firstChild);
+        }
+        
+        const statusText = status === 'connected' ? 
+            '🟢 Quantum Link Stable' : '🔴 Quantum Link Disrupted';
+        statusElement.innerHTML = `Connection: <span class="quantum-badge" style="background: ${
+            status === 'connected' ? '#00ff9d' : '#ff6b6b'
+        }">${statusText}</span>`;
     }
 
     // Update stats with enhanced error handling and retry logic
