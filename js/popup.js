@@ -190,6 +190,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearInterval(statsInterval);
     });
 
+    // Blacklist management
+    const domainInput = document.getElementById('domainInput');
+    const addDomainButton = document.getElementById('addDomain');
+    const blacklistContainer = document.getElementById('blacklistContainer');
+
+    function updateBlacklist() {
+        chrome.storage.local.get('blacklistedDomains', (data) => {
+            const domains = data.blacklistedDomains || [];
+            blacklistContainer.innerHTML = domains.map(domain => `
+                <div class="blacklist-item">
+                    <span>${domain}</span>
+                    <button data-domain="${domain}">×</button>
+                </div>
+            `).join('');
+
+            // Add remove handlers
+            blacklistContainer.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const domain = button.dataset.domain;
+                    const updatedDomains = domains.filter(d => d !== domain);
+                    chrome.storage.local.set({ blacklistedDomains: updatedDomains }, updateBlacklist);
+                });
+            });
+        });
+    }
+
+    addDomainButton.addEventListener('click', () => {
+        const domain = domainInput.value.trim().toLowerCase();
+        if (domain) {
+            chrome.storage.local.get('blacklistedDomains', (data) => {
+                const domains = data.blacklistedDomains || [];
+                if (!domains.includes(domain)) {
+                    domains.push(domain);
+                    chrome.storage.local.set({ blacklistedDomains: domains }, () => {
+                        domainInput.value = '';
+                        updateBlacklist();
+                    });
+                }
+            });
+        }
+    });
+
+    // Initial blacklist load
+    updateBlacklist();
+
     // Add quantum hover effects
     document.querySelectorAll('.quantum-control').forEach(control => {
         control.addEventListener('mouseover', () => {

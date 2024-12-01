@@ -79,6 +79,60 @@
             color: var(--quantum-primary);
         }
 
+        .blacklist-input {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .blacklist-input input {
+            flex: 1;
+            background: var(--quantum-dark);
+            border: 1px solid var(--quantum-primary);
+            color: var(--quantum-light);
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .quantum-button {
+            background: var(--quantum-primary);
+            color: var(--quantum-dark);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quantum-button:hover {
+            background: var(--quantum-accent);
+            transform: scale(1.05);
+        }
+
+        .blacklist-container {
+            max-height: 100px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+
+        .blacklist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.05);
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+
+        .blacklist-item button {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+
         .quantum-stats {
             margin-top: 20px;
             padding: 12px;
@@ -138,6 +192,15 @@
         <input type="range" class="quantum-slider" id="coherence" 
                min="0" max="100" value="90">
         <div class="quantum-value" id="coherenceValue">90%</div>
+    </div>
+
+    <div class="quantum-control">
+        <label>Blacklist Management</label>
+        <div class="blacklist-input">
+            <input type="text" id="domainInput" placeholder="Enter domain (e.g., example.com)">
+            <button id="addDomain" class="quantum-button">Add</button>
+        </div>
+        <div id="blacklistContainer" class="blacklist-container"></div>
     </div>
 
     <div class="quantum-stats">

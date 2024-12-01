@@ -7,7 +7,8 @@ chrome.runtime.onInstalled.addListener(() => {
             manifestationProbability: 0.75,
             realityDistortion: 0.5
         },
-        blacklistEnabled: true
+        blacklistEnabled: true,
+        blacklistedDomains: []
     });
 });
 
