@@ -63,10 +63,11 @@ function handleRealityFluctuation(mutations) {
             // Handle new nodes
             mutation.addedNodes.forEach(node => {
                 if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Check if new elements affect quantum state
-                    quantumState.evaluateNodeInfluence(node);
+                    // Evaluate node influence on quantum state based on element type
+                    const influenceScore = (node.tagName === 'IMG' || node.tagName === 'VIDEO') ? 0.8 : 0.3;
+                    quantumState.parameters.coherence *= (1 + influenceScore * 0.1);
                     
-                    // Potentially manifest cats based on quantum probability
+                    // Manifest cats with probability adjusted by node influence
                     if (Math.random() < QUANTUM_CONSTANTS.CAT_SUPERPOSITION_THRESHOLD) {
                         const params = {
                             position: { x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight },
