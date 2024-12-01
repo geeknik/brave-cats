@@ -6,6 +6,8 @@ Transform your browsing reality through procedurally generated feline manifestat
 
 QCOE introduces a novel approach to web content augmentation through quantum-inspired procedural cat generation. Each image encounter triggers a unique feline materialization, creating a personalized reality tunnel of cat-enhanced digital experiences.
 
+![image](https://github.com/user-attachments/assets/d6a22b7d-5edd-40cf-b288-fbc86a272ad3)
+
 ## 📢 Technical Architecture
 
 ```plaintext
@@ -29,6 +31,8 @@ Browser Context
 - **Non-Destructive Operations**: Original image integrity preservation
 - **Performance Optimization**: Minimal reality-warping overhead
 - **Cross-Origin Protocols**: Secure cat manifestation across domains
+
+See [demo.png](demo.png) for a simple example.
 
 ## 🏨 Development Prerequisites
 
