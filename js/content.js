@@ -1,0 +1,2 @@
+// Content script with error handling and graceful degradation
+const QUANTUM_CONSTANTS={PLANCK_LENGTH:1.616255e-35,CAT_SUPERPOSITION_THRESHOLD:0.42};let quantumState,catGenerator;try{quantumState=new QuantumStateManager();catGenerator=new CatGenerator(quantumState);initializeQuantumField();}catch(err){console.error('Quantum fluctuation detected:',err);}

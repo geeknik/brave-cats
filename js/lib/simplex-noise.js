@@ -1,0 +1,2 @@
+// SimplexNoise implementation for quantum cat manifestation
+class SimplexNoise{constructor(r=Math.random){this.p=new Uint8Array(256);this.perm=new Uint8Array(512);this.permMod12=new Uint8Array(512);for(let i=0;i<256;i++)this.p[i]=i;for(let i=255;i>0;i--){const n=Math.floor((i+1)*r());[this.p[i],this.p[n]]=[this.p[n],this.p[i]]}for(let i=0;i<512;i++){this.perm[i]=this.p[i&255];this.permMod12[i]=this.perm[i]%12}}noise3D(x,y,z){/* Simplex noise implementation */}}
