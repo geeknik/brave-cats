@@ -13,17 +13,17 @@
       "description": "Quantum reality parameters",
       "properties": {
         "coherence": {
-          "type": "number",
+          "type": "integer",
           "minimum": 0,
           "maximum": 100
         },
         "manifestationProbability": {
-          "type": "number",
+          "type": "integer",
           "minimum": 0,
           "maximum": 100
         },
         "realityDistortion": {
-          "type": "number",
+          "type": "integer",
           "minimum": 0,
           "maximum": 100
         }
