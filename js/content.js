@@ -260,7 +260,7 @@ function initializeQuantumReality() {
             const stats = {
                 shards: Math.min(activeShards, 999),
                 cats: quantumState.manifestedEntities.size,
-                stability: Math.round(quantumState.parameters.coherence * 100)
+                stability: Math.round(quantumState.parameters.coherence)
             };
 
             // Ensure we never return undefined/null values

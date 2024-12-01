@@ -10,9 +10,9 @@ class QuantumStateManager {
         
         // Initialize quantum parameters
         this.parameters = {
-            coherence: 0.92,
-            manifestationProbability: 0.75,
-            realityDistortion: 0.5,
+            coherence: 92,
+            manifestationProbability: 75,
+            realityDistortion: 50,
             planckCat: 1.616255e-35
         };
         

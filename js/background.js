@@ -4,9 +4,9 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.get(['blacklistedDomains'], (result) => {
         chrome.storage.local.set({
             quantumState: {
-                coherence: 0.92,
-                manifestationProbability: 0.75,
-                realityDistortion: 0.5
+                coherence: 92,
+                manifestationProbability: 75,
+                realityDistortion: 50
             },
             blacklistEnabled: true,
             blacklistedDomains: result.blacklistedDomains || []
